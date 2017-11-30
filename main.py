@@ -34,24 +34,13 @@ class main:
 	
 	recentPriceTable = []
 	
+	price_checker.start()
+	
 			      
 	
 	def update():
 		current_price = market.getMarketPrice()
-	
-			      
-
-
-
-	#acceptable_loss = input("What is the maximum tolerable loss: ")
-	#total_loss = 0
-
-	while True: # conditions for running the program
-
-		#time interval code
-			      
-			      
-			      
+		
 		if current_price >= setPrice:
 
 			size1 = setPrice * dollar_buy
@@ -69,6 +58,15 @@ class main:
 			   	}
 
 			r = requests.post(api_url + 'orders', json=order, auth=auth)
+			
+	
+			      
+
+
+
+	#acceptable_loss = input("What is the maximum tolerable loss: ")
+	#total_loss = 0
+
 			      
 
 
