@@ -6,7 +6,7 @@ class main:
 #	import Purchase
 	import CoinBaseExchangeAuth
 	import MarketSocket
-	import time
+	import Timer
 
 	global acceptable_loss,  total_loss, clock, market, coinbase_terminal
 
@@ -19,6 +19,8 @@ class main:
 
 	#buy terminal
 
+	
+	
 
 
 
@@ -26,6 +28,18 @@ class main:
 	coinbase_terminal = CoinBaseExchangeAuth.CoinbaseExchangeAuth(User_API_Key,User_Secret, User_Passphrase)
 	#coinbase_terminal = CoinbaseExchangeAuth(User_API_Key, User_Secret, User_Passphrase)
 	market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
+	
+	current_price = 0
+	price_checker = Timer(8, update())
+	
+	recentPriceTable = []
+	
+			      
+	
+	def update():
+		current_price = market.getMarketPrice()
+	
+			      
 
 
 
@@ -35,7 +49,10 @@ class main:
 	while True: # conditions for running the program
 
 		#time interval code
-		if market.getMarketPrice() >= setPrice:
+			      
+			      
+			      
+		if current_price >= setPrice:
 
 			size1 = setPrice * dollar_buy
 			test = CoinbaseExchangeAuth(api, secret, passphrase)
@@ -52,6 +69,7 @@ class main:
 			   	}
 
 			r = requests.post(api_url + 'orders', json=order, auth=auth)
+			      
 
 
 
