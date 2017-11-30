@@ -6,7 +6,10 @@ from threading import Timer
 
 class AuthenticatedClient:
   
-      def __init__(self, Auth):
-        self.auth = 
+      def __init__(self, CoinBaseExchangeAuth):
+        self.auth = CoinBaseExchangeAuth
+       
+      
+     def buy()
 
   
