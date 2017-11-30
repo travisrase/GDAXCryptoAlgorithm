@@ -1,73 +1,85 @@
+
+
+import CoinBaseExchangeAuth
+import MarketSocket
+import requests
+from threading import Timer
+
+
+
 class main:
 
-#	import Purchase
-#	import PublicClient
-#	import WebsocketClient
-#	import Purchase
-	import CoinBaseExchangeAuth
-	import MarketSocket
-	import Timer
 
-	global acceptable_loss,  total_loss, clock, market, coinbase_terminal
+
+
+	global acceptable_loss,  total_loss, clock, market, coinbase_terminal, setPrice, dollar_buy
 
 	#User Input information for keys
 	User_API_Key = input("Input the API KEY: ")
-	User_Passphrase = input("Input the Passphrase: ")
 	User_Secret= input("Input the secret Key: ")
-	dollar_buy = input("How much do you want to spend?: ")
-	setPrice = input("What is the price you want to buy at? :")
+	User_Passphrase = input("Input the Passphrase: ")
+
+	dollar_buy = float(input("How much do you want to spend?: "))
+	setPrice = float(input("What is the price you want to buy at? :"))
 
 	#buy terminal
 
-	
-	
 
 
 
 
-	coinbase_terminal = CoinBaseExchangeAuth.CoinbaseExchangeAuth(User_API_Key,User_Secret, User_Passphrase)
-	#coinbase_terminal = CoinbaseExchangeAuth(User_API_Key, User_Secret, User_Passphrase)
+
+
+	#coinbase_terminal = CoinBaseExchangeAuth.CoinbaseExchangeAuth(User_API_Key,User_Secret, User_Passphrase)
+
 	market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
-	
-	current_price = 0
-	price_checker = Timer(8, update())
-	
-	recentPriceTable = []
-	
-	price_checker.start()
-	
-			      
-	
+
+
+
+
 	def update():
 		current_price = market.getMarketPrice()
-		
+		print(current_price)
 		if current_price >= setPrice:
 
-			size1 = setPrice * dollar_buy
-			test = CoinbaseExchangeAuth(api, secret, passphrase)
+			size1 = dollar_buy/setPrice
+			size1 = str(size1)
+
 
 			api_url = 'https://api.gdax.com/'
 			auth = coinbase_terminal
 			r = requests.get(api_url + 'accounts', auth=auth)
 
+			#Manually inputted the buy size and price to fix that problem. We can change all of this later
+			
 			order = {
-			      'size': size1,
-			      'price': setPrice,
+			      'size': '.01',
+			      'price': '80.63',
 			      'side': 'buy',
 			      'product_id': 'LTC-USD',
 			   	}
 
 			r = requests.post(api_url + 'orders', json=order, auth=auth)
-			
-	
-			      
+			print(r.status_code)
+			print("------------------BOUGHT-------------")
+			print(order)
 
+
+
+
+	current_price = 0
+	price_checker = Timer(8, update())
+
+	recentPriceTable = []
+
+	price_checker.start()
 
 
 	#acceptable_loss = input("What is the maximum tolerable loss: ")
 	#total_loss = 0
 
-			      
+
+
 
 
 
