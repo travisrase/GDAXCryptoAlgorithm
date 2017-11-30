@@ -49,9 +49,7 @@ class main:
 		if current_price >= setPrice:
 
 			size1 = dollar_buy/setPrice
-			size1 = str(size1)
-			
-			AuthenticatedClient.buy(.01, setPrice, 'LTC-USD'
+			AuthenticatedClient.buy(size1, setPrice, 'LTC-USD')
 
 
 
