@@ -55,9 +55,9 @@ class main:
 
 
 
-	price_checker = Timer(8, update())
+	run_update = Timer(8, update())
 
-	price_checker.start()
+	run_update.start()
 
 
 	#acceptable_loss = input("What is the maximum tolerable loss: ")
