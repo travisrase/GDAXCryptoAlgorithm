@@ -28,15 +28,20 @@ class main:
 
 
 
-
+	api_url = 'https://api.gdax.com/'
 
 	coinbase_terminal = CoinBaseExchangeAuth.CoinbaseExchangeAuth(User_API_Key,User_Secret, User_Passphrase)
 
 	market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
+	
+	AuthenticatedClient = AuthenticatedClient.AuthenticatedClient(coinbase_terminal, api_url)
 
 
 
-
+	current_price = 0
+	
+	recentPriceTable = []
+	
 	def update():
 		current_price = market.getMarketPrice()
 		print(current_price)
@@ -45,33 +50,14 @@ class main:
 
 			size1 = dollar_buy/setPrice
 			size1 = str(size1)
-
-
-			api_url = 'https://api.gdax.com/'
-			auth = coinbase_terminal
-			r = requests.get(api_url + 'accounts', auth=auth)
-
-			#Manually inputted the buy size and price to fix that problem. We can change all of this later
-
-			order = {
-			      'size': '.01',
-			      'price': str(setPrice),
-			      'side': 'buy',
-			      'product_id': 'LTC-USD',
-			   	}
-
-			r = requests.post(api_url + 'orders', json=order, auth=auth)
-			print(r.status_code)
-			print("------------------BOUGHT-------------")
-			print(order)
+			
+			AuthenticatedClient.buy(.01, setPrice, 'LTC-USD'
 
 
 
 
-	current_price = 0
+
 	price_checker = Timer(8, update())
-
-	recentPriceTable = []
 
 	price_checker.start()
 
