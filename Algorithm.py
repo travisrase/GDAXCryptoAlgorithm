@@ -1,50 +1,83 @@
-import Purchase
-import WebsocketClient
-import AuthenticatedClient
-import Time
+
+from CoinBaseExchangeAuth import CoinbaseExchangeAuth
+import MarketSocket
+import requests
+from threading import Timer
+from AuthenticatedClient import AuthenticatedClient
+import time
+import datetime
+
 
 class Algorithm:
     "Running algoritm class to be used by purchase objects"
     #number of entries that will be stored in the price table all the
     #data we have to work with. will ultimetely be a very large number
-    NUM_ENTRIES_PRICETABLE = 4
+    NUM_ENTRIES_AVERAGEPRICETABLE = 4
+    ENTRIES_PER_AVERAGE = 4
     #Time given in seconds
-    UPDATE_INTERVAL = 10
+    UPDATE_INTERVAL = 1
 
 
     def __init__(self, alg, AuthClient, MarketSocket, dollar_value, typeCoin):
         self.alg = alg
         self.AuthClient = AuthClient
         self.MarketSocket = MarketSocket
-        self.recentPriceTable = {NUM_ENTRIES_PRICETABLE}
+        self.recentPriceTable = [Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE * Algorithm.ENTRIES_PER_AVERAGE]
         self.current_price = 0
-        self.slopeTable = {NUM_ENTRIES_PRICETABLE - 1}
+        self.slopeTable = [Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1]
         self.dollar_value = dollar_value
         self.typeCoin = typeCoin
         self.inMarket = False
+        self.secondDerivTable =[Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 2]
+        self.averagePriceTable =[-1,-1,-1,-1]
 
 
-    def secondDerivBuyAlgo():
+
+    def secondDerivBuyAlgo(self):
         minSecondDeriv = .01
         buyPrice = 0
 
 
-        while(!inMarket):
-            secondDeriv = getSecondDeriv()
-            if(secondDeriv[0] = true && secondDeriv[1] > minSecondDeriv):
+        while(not self.inMarket):
+            secondDeriv = self.getSecondDeriv()
+            print("Recent Price Table ---------- " + str(self.recentPriceTable))
+            print("Average Price Table ---------- " + str(self.averagePriceTable))
+            print("Slope Table ---------- " + str(self.slopeTable))
+            print("Second Deriv Object ---------- " + str(secondDeriv))
+            print("Second Derriv Table ---------- " + str(self.secondDerivTable) + "\n")
+
+
+
+            if(secondDeriv[0] and secondDeriv[1] > minSecondDeriv):
+                print("-------------BUY----------------------" + "\n")
+                print("\n")
+                print("----Bought with Second Deriv At: " + str(self.secondDerivTable))
+                currentDT = datetime.datetime.now()
+                print (str(currentDT))
+                print("\n")
+                print("\n")
                 #WILL RETURN WRONG TYPE _______________________________________
-                size = dollar_value / MarketSocket.getMarketPrice()
-                setPrice = MarketSocket.getMarketPrice() -1
 
-                AuthClient.buy(size, setPrice, typeCoin)
-                buyPrice = setPrice
-                inMarket = True
-                percentSell(buyPrice)
-            else
-                time.sleep(UPDATE_INTERVAL)
+                size = float(self.dollar_value) / float(self.MarketSocket.getMarketPrice())
 
 
-    def percentSell(buyPrice)
+                setPrice = float(self.MarketSocket.getMarketPrice())
+                setPrice = round(setPrice,3)
+                setPrice = str(setPrice)
+                size = str(round(size,2))
+
+
+                #self.AuthClient.buy(size, setPrice, self.typeCoin)
+                #buyPrice = setPrice
+                self.inMarket = True
+
+                #percentSell(buyPrice)
+            else:
+
+                time.sleep(Algorithm.UPDATE_INTERVAL)
+
+
+    def percentSell(self, buyPrice):
         highProfit = 0
         tolerance = .3
 
@@ -73,62 +106,88 @@ class Algorithm:
 
 
 
+    def getSecondDeriv(self):
 
-
-
-
-
-
-
-    def getSecondDeriv():
-
+        self.updateSlopeTable()
         #first index indicates weather all second derivatives are positive
         #second index returns the average secondDerivative
-        returnElement = {False, 0}
+        returnElement = [False, 0]
         allPositive = True
-        secondDerivTable = {len(slopeTable) -1}
-        for index in range(1, len(secondDerivTable))
-            if(index < 0):
+
+        if len(self.slopeTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE:
+            self.updateSlopeTable()
+
+        self.secondDerivTable.insert(0, (self.slopeTable[0]-self.slopeTable[1])/Algorithm.UPDATE_INTERVAL)
+
+        if len(self.secondDerivTable) >= len(self.slopeTable)-1:
+            self.secondDerivTable = self.secondDerivTable[:-1]
+
+
+        for item in self.secondDerivTable:
+            if(item < 0):
+                allPositive = False
+             #ensures that all second derivs are positiv
+        self.updateSlopeTable()
+        for item in self.slopeTable:
+            if(item <= 0):
                 allPositive = False
 
-            secondDerivTable[index-1] = (slopeTable[index-1]-slopeTable[index])/UPDATE_INTERVAL
+        averageSecondDeriv = sum(self.secondDerivTable) / float(len(self.secondDerivTable))
+        returnElement = [allPositive, averageSecondDeriv]
 
-
-        averageSecondDeriv = sum(secondDerivTable) / float(len(secondDerivTable))
-        returnElement = {allPositive, averageSecondDeriv}
         return returnElement
 
-    def update():
 
 
 
-    	if current_price >= setPrice:
+    def updateSlopeTable(self):
 
-    		size1 = dollar_buy/setPrice
-    		AuthenticatedClient.buy(size1, setPrice, 'LTC-USD')
+        self.updatePriceTable()
 
+        while len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE*4:
+            self.updatePriceTable()
+        self.updateAvgTable()
+        while len(self.averagePriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1:
+            self.updateAvgTable()
+            #if len(self.recentPriceTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE:
 
+            #    self.slopeTable.insert(0,(self.recentPriceTable[0] - self.recentPriceTable[1])/ Algorithm.UPDATE_INTERVAL)
 
-    def updateSlopeTable():
-        updatePriceTable()
-        for index in range(1, len(recentPriceTable)-1):
-            sloepTable[index-1] = (recentPriceTable[index-1] - recentPriceTable[index])/ UPDATE_INTERVAL
+        if len(self.slopeTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 1:
+            self.slopeTable = self.slopeTable[:-1]
 
+        self.slopeTable.insert(0,(self.averagePriceTable[0] - self.averagePriceTable[1])/ Algorithm.UPDATE_INTERVAL)
 
-    def updatePriceTable():
-
-        for index in range(len(recentPriceTable)-1, 0, -1)
-            if(index == 0):
-                priceTable[0] = MarketSocket.getMarketPrice()
-            else:
-                priceTable[index] = priceTable[index-1]
-
-
+        #for index in range(1, len(self.recentPriceTable)-1):
+        #    self.slopeTable[index-1] = (self.recentPriceTable[index-1] - self.recentPriceTable[index])/ UPDATE_INTERVAL
 
 
+    def updatePriceTable(self):
 
+        if len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE*4:
 
+            self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
+        else:
+            self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
+            self.recentPriceTable = self.recentPriceTable[:-1]
 
-    run_update = Timer(8, update())
+    def updateAvgTable(self):
 
-    run_update.start()
+        i = 0
+        start = 0
+        end = self.ENTRIES_PER_AVERAGE
+        while i < len(self.averagePriceTable):
+
+            average = 0
+
+            while start < end:
+                average += self.recentPriceTable[start]
+                start += 1
+            end += self.ENTRIES_PER_AVERAGE
+            average = average/len(self.averagePriceTable)
+
+            self.averagePriceTable[i] = average
+            average = 0
+            i += 1
+        if(len(self.averagePriceTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE):
+            self.averagePriceTable = self.averagePriceTable[:-1]
