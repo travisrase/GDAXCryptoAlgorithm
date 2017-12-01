@@ -6,24 +6,31 @@ from threading import Timer
 
 class AuthenticatedClient:
 
-      def __init__(self, CoinBaseExchangeAuth, api_url):
-          self.auth = CoinBaseExchangeAuth
-          self.api_url = api_url
+    def __init__(self, CoinBaseExchangeAuth, api_url):
+        self.auth = CoinBaseExchangeAuth
+        self.api_url = api_url
 
 
-     #size and price may be given as ints or strings, product_id must be a string
-     def buy(size, price, product_id):
-         size = str(size)
-         price = str(price)
-         r = requests.get(api_url + 'accounts', auth=self.auth)
-         order = {
+
+
+    def buy(self, size, price, product_id):
+        size = str(size)
+        price = str(price)
+        r = requests.get(self.api_url + 'accounts', auth=self.auth)
+        print(type(size))
+        print(type(price))
+        order = {
 			      'size': size,
 			      'price': price,
 			      'side': 'buy',
-			      'product_id': product_id,
+			      'product_id': product_id
 			   	}
+        print(self.api_url + 'orders')
+        print(self.auth)
+        print(order)
+        r = requests.post(self.api_url + 'orders', json=order, auth=self.auth)
+        print(r)
 
-        r = requests.post(api_url + 'orders', json=order, auth=auth)
-		print(r.status_code)
-		print("------------------BOUGHT-------------")
-		print(order)
+        print(r.status_code)
+		#print("------------------BOUGHT-------------")
+        print(order)
