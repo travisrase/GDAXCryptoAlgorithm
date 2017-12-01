@@ -17,19 +17,17 @@ class AuthenticatedClient:
         size = str(size)
         price = str(price)
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
-        print(type(size))
-        print(type(price))
+
         order = {
-			      'size': size,
+			      'size': ".01",
 			      'price': price,
 			      'side': 'buy',
 			      'product_id': product_id
 			   	}
-        print(self.api_url + 'orders')
-        print(self.auth)
-        print(order)
+
+
         r = requests.post(self.api_url + 'orders', json=order, auth=self.auth)
-        print(r)
+        print(r.json())
 
         print(r.status_code)
 		#print("------------------BOUGHT-------------")
