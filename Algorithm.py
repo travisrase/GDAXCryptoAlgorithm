@@ -12,7 +12,8 @@ class Algorithm:
     "Running algoritm class to be used by purchase objects"
     #number of entries that will be stored in the price table all the
     #data we have to work with. will ultimetely be a very large number
-    NUM_ENTRIES_PRICETABLE = 4
+    NUM_ENTRIES_AVERAGEPRICETABLE = 4
+    ENTRIES_PER_AVERAGE = 4
     #Time given in seconds
     UPDATE_INTERVAL = 1
 
@@ -21,13 +22,13 @@ class Algorithm:
         self.alg = alg
         self.AuthClient = AuthClient
         self.MarketSocket = MarketSocket
-        self.recentPriceTable = [Algorithm.NUM_ENTRIES_PRICETABLE*4]
+        self.recentPriceTable = [Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE * Algorithm.ENTRIES_PER_AVERAGE]
         self.current_price = 0
-        self.slopeTable = [Algorithm.NUM_ENTRIES_PRICETABLE-1]
+        self.slopeTable = [Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1]
         self.dollar_value = dollar_value
         self.typeCoin = typeCoin
         self.inMarket = False
-        self.secondDerivTable =[Algorithm.NUM_ENTRIES_PRICETABLE - 2]
+        self.secondDerivTable =[Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 2]
         self.averagePriceTable =[-1,-1,-1,-1]
 
 
@@ -113,7 +114,7 @@ class Algorithm:
         returnElement = [False, 0]
         allPositive = True
 
-        if len(self.slopeTable) < Algorithm.NUM_ENTRIES_PRICETABLE:
+        if len(self.slopeTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE:
             self.updateSlopeTable()
 
         self.secondDerivTable.insert(0, (self.slopeTable[0]-self.slopeTable[1])/Algorithm.UPDATE_INTERVAL)
@@ -143,16 +144,16 @@ class Algorithm:
 
         self.updatePriceTable()
 
-        while len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_PRICETABLE*4:
+        while len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE*4:
             self.updatePriceTable()
         self.updateAvgTable()
-        while len(self.averagePriceTable) < Algorithm.NUM_ENTRIES_PRICETABLE-1:
+        while len(self.averagePriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1:
             self.updateAvgTable()
-            #if len(self.recentPriceTable) > Algorithm.NUM_ENTRIES_PRICETABLE:
+            #if len(self.recentPriceTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE:
 
             #    self.slopeTable.insert(0,(self.recentPriceTable[0] - self.recentPriceTable[1])/ Algorithm.UPDATE_INTERVAL)
 
-        if len(self.slopeTable) > Algorithm.NUM_ENTRIES_PRICETABLE - 1:
+        if len(self.slopeTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 1:
             self.slopeTable = self.slopeTable[:-1]
 
         self.slopeTable.insert(0,(self.averagePriceTable[0] - self.averagePriceTable[1])/ Algorithm.UPDATE_INTERVAL)
@@ -163,7 +164,7 @@ class Algorithm:
 
     def updatePriceTable(self):
 
-        if len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_PRICETABLE*4:
+        if len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE*4:
 
             self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
         else:
@@ -174,7 +175,7 @@ class Algorithm:
 
         i = 0
         start = 0
-        end = 4
+        end = self.ENTRIES_PER_AVERAGE
         while i < len(self.averagePriceTable):
 
             average = 0
@@ -182,11 +183,11 @@ class Algorithm:
             while start < end:
                 average += self.recentPriceTable[start]
                 start += 1
-            end += 4
+            end += self.ENTRIES_PER_AVERAGE
             average = average/len(self.averagePriceTable)
 
             self.averagePriceTable[i] = average
             average = 0
             i += 1
-        if(len(self.averagePriceTable) > Algorithm.NUM_ENTRIES_PRICETABLE):
+        if(len(self.averagePriceTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE):
             self.averagePriceTable = self.averagePriceTable[:-1]
