@@ -22,14 +22,14 @@ class Algorithm:
         self.alg = alg
         self.AuthClient = AuthClient
         self.MarketSocket = MarketSocket
-        self.recentPriceTable = [Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE * Algorithm.ENTRIES_PER_AVERAGE]
+        self.recentPriceTable = [0]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE * Algorithm.ENTRIES_PER_AVERAGE)
         self.current_price = 0
-        self.slopeTable = [Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1]
+        self.slopeTable = [-100]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1)
         self.dollar_value = dollar_value
         self.typeCoin = typeCoin
         self.inMarket = False
-        self.secondDerivTable =[Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 2]
-        self.averagePriceTable =[-1,-1,-1,-1]
+        self.secondDerivTable =[0]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 2)
+        self.averagePriceTable =[0]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE)
 
 
 
@@ -72,9 +72,6 @@ class Algorithm:
                 self.inMarket = True
 
                 #percentSell(buyPrice)
-            else:
-
-                time.sleep(Algorithm.UPDATE_INTERVAL)
 
 
     def percentSell(self, buyPrice):
@@ -97,15 +94,6 @@ class Algorithm:
             time.sleep(1)
 
 
-
-
-
-
-
-
-
-
-
     def getSecondDeriv(self):
 
         self.updateSlopeTable()
@@ -114,20 +102,18 @@ class Algorithm:
         returnElement = [False, 0]
         allPositive = True
 
-        if len(self.slopeTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE:
-            self.updateSlopeTable()
+        self.secondDerivTable.insert(0, (self.slopeTable[1]-self.slopeTable[0])/Algorithm.UPDATE_INTERVAL)
+        self.secondDerivTable = self.secondDerivTable[:-1]
 
-        self.secondDerivTable.insert(0, (self.slopeTable[0]-self.slopeTable[1])/Algorithm.UPDATE_INTERVAL)
-
-        if len(self.secondDerivTable) >= len(self.slopeTable)-1:
-            self.secondDerivTable = self.secondDerivTable[:-1]
-
-
+        previousItem = 0
         for item in self.secondDerivTable:
             if(item < 0):
                 allPositive = False
+            if(item < previousItem):
+                allPositive = False
+            previousItem = item
              #ensures that all second derivs are positiv
-        self.updateSlopeTable()
+
         for item in self.slopeTable:
             if(item <= 0):
                 allPositive = False
@@ -138,52 +124,36 @@ class Algorithm:
         return returnElement
 
 
-
-
     def updateSlopeTable(self):
-
-        self.updatePriceTable()
-
-        while len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE*4:
-            self.updatePriceTable()
         self.updateAvgTable()
-        while len(self.averagePriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1:
-            self.updateAvgTable()
-            #if len(self.recentPriceTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE:
+        iterator = 0
 
-            #    self.slopeTable.insert(0,(self.recentPriceTable[0] - self.recentPriceTable[1])/ Algorithm.UPDATE_INTERVAL)
+        if(self.slopeTable[len(self.slopeTable)-1] == -100):
+            while(iterator < len(self.slopeTable)):
+                print(iterator)
+                self.slopeTable[iterator] = (self.averagePriceTable[iterator+1] - self.averagePriceTable[iterator])/ Algorithm.UPDATE_INTERVAL
+                iterator +=1
 
-        if len(self.slopeTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 1:
+        else:
+            self.slopeTable.insert(0,(self.averagePriceTable[1] - self.averagePriceTable[0])/ Algorithm.UPDATE_INTERVAL)
             self.slopeTable = self.slopeTable[:-1]
 
-        self.slopeTable.insert(0,(self.averagePriceTable[0] - self.averagePriceTable[1])/ Algorithm.UPDATE_INTERVAL)
-
-        #for index in range(1, len(self.recentPriceTable)-1):
-        #    self.slopeTable[index-1] = (self.recentPriceTable[index-1] - self.recentPriceTable[index])/ UPDATE_INTERVAL
-
-
-    def updatePriceTable(self):
-
-        if len(self.recentPriceTable) < Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE*4:
-
-            self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
-        else:
-            self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
-            self.recentPriceTable = self.recentPriceTable[:-1]
-
     def updateAvgTable(self):
+        iterator = 0
+        while(iterator < Algorithm.ENTRIES_PER_AVERAGE):
+            self.updatePriceTable()
+            iterator += 1
 
         i = 0
         start = 0
-        end = self.ENTRIES_PER_AVERAGE
+        end = Algorithm.ENTRIES_PER_AVERAGE
         while i < len(self.averagePriceTable):
-
             average = 0
 
             while start < end:
                 average += self.recentPriceTable[start]
                 start += 1
-            end += self.ENTRIES_PER_AVERAGE
+            end += Algorithm.ENTRIES_PER_AVERAGE
             average = average/len(self.averagePriceTable)
 
             self.averagePriceTable[i] = average
@@ -191,3 +161,9 @@ class Algorithm:
             i += 1
         if(len(self.averagePriceTable) > Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE):
             self.averagePriceTable = self.averagePriceTable[:-1]
+
+    def updatePriceTable(self):
+
+        self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
+        self.recentPriceTable = self.recentPriceTable[:-1]
+        time.sleep(Algorithm.UPDATE_INTERVAL)
