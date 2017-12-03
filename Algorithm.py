@@ -15,7 +15,7 @@ class Algorithm:
     NUM_ENTRIES_AVERAGEPRICETABLE = 4
     ENTRIES_PER_AVERAGE = 4
     #Time given in seconds
-    UPDATE_INTERVAL = 1
+    UPDATE_INTERVAL = .5
 
 
     def __init__(self, alg, AuthClient, MarketSocket, dollar_value, typeCoin):
@@ -84,7 +84,10 @@ class Algorithm:
                 highProfit = profit
 
             if(profit < 0):
-                #SELL__________________________________________
+                price = Market.getMarketPrice()
+                size = self
+
+                self.AuthClient.sell(str(Market.getMarketPrice())
                 inMarket = False
 
             elif(profit/highProfit < (1-tolerance)):
@@ -131,11 +134,11 @@ class Algorithm:
         if(self.slopeTable[len(self.slopeTable)-1] == -100):
             while(iterator < len(self.slopeTable)):
                 print(iterator)
-                self.slopeTable[iterator] = (self.averagePriceTable[iterator+1] - self.averagePriceTable[iterator])/ Algorithm.UPDATE_INTERVAL
+                self.slopeTable[iterator] = (self.averagePriceTable[iterator] - self.averagePriceTable[iterator+1])/ Algorithm.UPDATE_INTERVAL
                 iterator +=1
 
         else:
-            self.slopeTable.insert(0,(self.averagePriceTable[1] - self.averagePriceTable[0])/ Algorithm.UPDATE_INTERVAL)
+            self.slopeTable.insert(0,(self.averagePriceTable[0] - self.averagePriceTable[1])/ Algorithm.UPDATE_INTERVAL)
             self.slopeTable = self.slopeTable[:-1]
 
     def updateAvgTable(self):
