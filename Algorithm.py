@@ -165,7 +165,15 @@ class Algorithm:
     def buyRSI(self):
         numPeriods = 14
         while(self.inMarket == False):
-            if(self.getRSI(self,numPeriods) < 30):
+            RSI = self.getRSI(self,numPeriods)
+            
+            print("------------------------------------------")
+            print("Current Market Price: " + self.recentPriceTable[0])
+            print("RSI: " + str(RSI))
+            print("\n")
+            print("\n")
+            
+            if(RSI < 30):
             
                 size = float(self.dollar_value) / float(self.MarketSocket.getMarketPrice())
                 setPrice = float(self.MarketSocket.getMarketPrice())
