@@ -30,6 +30,8 @@ class Algorithm:
         self.inMarket = False
         self.secondDerivTable =[0]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE - 2)
         self.averagePriceTable =[0]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE)
+        self.averageGain = -1
+        self.averageLoss = -1
 
 
 
@@ -215,6 +217,7 @@ class Algorithm:
 
     def averageGain(self, numPeriods):
         self.updatePriceTable()
+        previousAverage = self.averageGain
         average = -1
         gainTable = {numPeriods}
         if(len(self.recentPriceTable) < numPeriods):
@@ -230,10 +233,18 @@ class Algorithm:
             
             sum = sum(gainTable)
             average = sum/numPeriods
-            return average 
+            if(previousAverage == -1):
+                self.averageGain = average
+                return average
+            else:
+                average = (previousAverage(numPeriods-1) + average)/numPeriods
+                self.averageGain = average
+                return average
+            
         
      def averageLoss(self, numPeriods):
         self.updatePriceTable()
+        previousAverage = self.averageLoss
         average = -1
         lossTable = {numPeriods}
         if(len(self.recentPriceTable) < numPeriods):
@@ -246,10 +257,19 @@ class Algorithm:
                 else:
                     lossTable[i-1] = 0
                 
-            
             sum = sum(lossTable)
             average = sum/numPeriods
-            return average    
+
+            if(previousAverage == -1):
+                self.averageLoss = average
+                return average
+            else:
+                average = (previousAverage(numPeriods-1) + average)/numPeriods
+                self.averageLoss = average
+                return average
+                
+            
+ 
     
                 
        
