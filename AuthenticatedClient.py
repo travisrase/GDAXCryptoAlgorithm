@@ -23,7 +23,7 @@ class AuthenticatedClient:
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
 
         order = {
-			      'size': ".01",
+			      'size': size,
 			      'price': price,
 			      'side': 'buy',
 			      'product_id': product_id
