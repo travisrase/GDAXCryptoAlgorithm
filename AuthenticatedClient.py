@@ -9,16 +9,16 @@ class AuthenticatedClient:
     def __init__(self, CoinBaseExchangeAuth, api_url):
         self.auth = CoinBaseExchangeAuth
         self.api_url = api_url
-	self.market = 
+	self.market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
 
 
 
-#if price = "Market" buy at market price -.01
+#if price = "Market" buy at market price
     def buy(self, size, price, product_id):
         size = str(size)
         price = str(price)
 	if(price == "market"):
-		price = 
+		price = str(self.market.getPrice())
 	
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
 
@@ -41,6 +41,8 @@ class AuthenticatedClient:
     def sell(self, size, price, product_id):
         size = str(size)
         price = str(price)
+	if(price == "market"):
+		price = str(self.market.getPrice())
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
 
         order = {
