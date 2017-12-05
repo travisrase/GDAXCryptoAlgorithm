@@ -9,13 +9,17 @@ class AuthenticatedClient:
     def __init__(self, CoinBaseExchangeAuth, api_url):
         self.auth = CoinBaseExchangeAuth
         self.api_url = api_url
+	self.market = 
 
 
 
-
+#if price = "Market" buy at market price -.01
     def buy(self, size, price, product_id):
         size = str(size)
         price = str(price)
+	if(price == "market"):
+		price = 
+	
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
 
         order = {
