@@ -67,11 +67,10 @@ class Algorithm:
                 size = str(round(size,2))
 
 
-                #self.AuthClient.buy(size, setPrice, self.typeCoin)
-                #buyPrice = setPrice
+                self.AuthClient.buy(size, setPrice, self.typeCoin)
+                buyPrice = setPrice
                 self.inMarket = True
-
-                #percentSell(buyPrice)
+                percentSell(buyPrice)
 
 
     def percentSell(self, buyPrice):
@@ -83,15 +82,11 @@ class Algorithm:
             if(profit > highProfit):
                 highProfit = profit
 
-            if(profit < 0):
+            if(profit < 0 or profit/highProfit < (1-tolerance)):
                 price = Market.getMarketPrice()
                 size = self
 
-                self.AuthClient.sell(str(Market.getMarketPrice())
-                inMarket = False
-
-            elif(profit/highProfit < (1-tolerance)):
-                #SELL_______________________
+                self.AuthClient.sell(size, "market", self.typeCoin)
                 inMarket = False
 
             time.sleep(1)
