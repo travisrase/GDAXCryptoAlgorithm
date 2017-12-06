@@ -26,6 +26,7 @@ class AuthenticatedClient:
 			      'price': price,
 			      'side': 'buy',
 			      'product_id': product_id
+                  'post_only' : true
 			   	}
 
         r = requests.post(self.api_url + 'orders', json=order, auth=self.auth)
@@ -44,10 +45,11 @@ class AuthenticatedClient:
 
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
         order = {
-        'size': size,
-        'price': price,
-        'side': 'sell',
-        'product_id': product_id
+            'size': size,
+            'price': price,
+            'side': 'sell',
+            'product_id': product_id
+            'post_only' : true
         }
 
         r = requests.post(self.api_url + 'orders', json=order, auth=self.auth)
