@@ -15,7 +15,7 @@ class Algorithm:
     NUM_ENTRIES_AVERAGEPRICETABLE = 4
     ENTRIES_PER_AVERAGE = 4
     #Time given in seconds
-    UPDATE_INTERVAL = 2
+    UPDATE_INTERVAL = 15
 
 
     def __init__(self, alg, AuthClient, MarketSocket, dollar_value, typeCoin):
@@ -130,7 +130,6 @@ class Algorithm:
 
         if(self.slopeTable[len(self.slopeTable)-1] == -100):
             while(iterator < len(self.slopeTable)):
-                print(iterator)
                 self.slopeTable[iterator] = (self.averagePriceTable[iterator] - self.averagePriceTable[iterator+1])/ Algorithm.UPDATE_INTERVAL
                 iterator +=1
 
@@ -166,7 +165,7 @@ class Algorithm:
         numPeriods = 14
         print("Wait " + str(numPeriods*Algorithm.UPDATE_INTERVAL) + " seconds")
         for i in range(0, numPeriods):
-            RSI = self.getRSI(numPeriods)
+            self.updatePriceTable()
 
         print("Ready to buy")
         print("--------------------------------------")
@@ -180,24 +179,32 @@ class Algorithm:
             print("\n")
             print("\n")
 
-            if(RSI < 30):
+            if(RSI < 35):
 
                 size = float(self.dollar_value) / float(self.MarketSocket.getMarketPrice())
-                setPrice = float(self.MarketSocket.getMarketPrice())
+                setPrice = float(self.MarketSocket.getMarketPrice()) -.01
                 setPrice = round(setPrice,3)
                 setPrice = str(setPrice)
                 size = str(round(size,2))
 
-                self.AuthClient.buy(size, setPrice, self.typeCoin)
+                self.AuthClient.buy(size, setPrice , self.typeCoin)
                 buyPrice = setPrice
                 self.inMarket = True
-                sellRSI(self, size)
+                self.sellRSI(size)
 
 
     def sellRSI(self, size):
         numPeriods = 14
         while(self.inMarket == True):
-            if(self.getRSI(numPeriods) > 70):
+            RSI = self.getRSI(numPeriods)
+
+            print("------------------------------------------")
+            print("Current Market Price: " + str(self.recentPriceTable[0]))
+            print("RSI: " + str(RSI))
+            print("\n")
+            print("\n")
+
+            if(RSI > 80):
 
                 setPrice = float(self.MarketSocket.getMarketPrice())
                 setPrice = round(setPrice,3)
@@ -206,9 +213,7 @@ class Algorithm:
 
                 self.AuthClient.sell(size, "market", self.typeCoin)
                 self.inMarket = False
-                buyRSI(self, numPeriods)
-
-
+                buyRSI(numPeriods)
 
 
     def getRSI(self, numPeriods):
@@ -232,7 +237,6 @@ class Algorithm:
             return RS
         else:
             RS = avgGain/avgLoss
-            print("RS: " + str(RS))
             return RS
 
     def getAverageGain(self, numPeriods):
@@ -259,7 +263,6 @@ class Algorithm:
             else:
                 average = (previousAverage*(numPeriods-1) + average)/numPeriods
                 self.averageGain = average
-                print("average gain: " + str(average))
                 return average
 
 
@@ -287,12 +290,7 @@ class Algorithm:
             else:
                 average = (previousAverage*(numPeriods-1) + average)/numPeriods
                 self.averageLoss = average
-                print("average loss: " + str(average))
                 return average
-
-
-
-
 
 
     def updatePriceTable(self):

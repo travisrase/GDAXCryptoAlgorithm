@@ -16,9 +16,9 @@ class main:
 	global acceptable_loss,  total_loss, clock, market, coinbase_terminal, setPrice, dollar_buy
 
 	#User Input information for keys
-	User_API_Key =
-	User_Secret=
-	User_Passphrase =
+	User_API_Key = ""
+	User_Secret= ""
+	User_Passphrase = ""
 
 	#dollar_buy = float(input("How much do you want to spend?: "))
 	#setPrice = float(input("What is the price you want to buy at? :"))
@@ -33,7 +33,7 @@ class main:
 
 	market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
 	auth_client = AuthenticatedClient(coinbase_terminal, market, api_url)
-	algo = Algorithm("dummy", auth_client, market, ".10", "LTC-USD")
+	algo = Algorithm("dummy", auth_client, market, "20.00", "LTC-USD")
 
 	algo.buyRSI()
 

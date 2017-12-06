@@ -40,7 +40,7 @@ class AuthenticatedClient:
         size = str(size)
         price = str(price)
         if(price == "market"):
-	           price = str(self.market.getPrice())
+	           price = str(float(self.market.getPrice()) + .01)
 
         r = requests.get(self.api_url + 'accounts', auth=self.auth)
         order = {
