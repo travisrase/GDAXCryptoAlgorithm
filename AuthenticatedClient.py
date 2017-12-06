@@ -25,7 +25,7 @@ class AuthenticatedClient:
 			      'size': size,
 			      'price': price,
 			      'side': 'buy',
-			      'product_id': product_id
+			      'product_id': product_id,
                   'post_only' : true
 			   	}
 
@@ -48,7 +48,7 @@ class AuthenticatedClient:
             'size': size,
             'price': price,
             'side': 'sell',
-            'product_id': product_id
+            'product_id': product_id,
             'post_only' : true
         }
 
