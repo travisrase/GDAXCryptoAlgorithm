@@ -18,7 +18,7 @@ class MarketSocket:
 
 
         auth = self.exchangeAuth
-        resp = requests.get(self.endpoint, auth=auth )
+        resp = requests.get(self.endpoint, auth=auth)
 
         if resp.status_code != 200:
             print(resp.status_code)

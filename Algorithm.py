@@ -16,6 +16,7 @@ class Algorithm:
     ENTRIES_PER_AVERAGE = 4
     #Time given in seconds
     UPDATE_INTERVAL = 15
+    NUM_SECONDS_BUY_OR_SELL = 10
 
 
     def __init__(self, alg, AuthClient, MarketSocket, dollar_value, typeCoin):
@@ -163,8 +164,8 @@ class Algorithm:
 
     def buyRSI(self):
         numPeriods = 14
-        print("Wait " + str(numPeriods*Algorithm.UPDATE_INTERVAL) + " seconds")
-        for i in range(0, numPeriods):
+        print("Wait " + str(numPeriods*Algorithm.UPDATE_INTERVAL*3) + " seconds")
+        for i in range(0, numPeriods*3):
             self.updatePriceTable()
 
         print("Ready to buy")
@@ -174,6 +175,7 @@ class Algorithm:
             RSI = self.getRSI(numPeriods)
 
             print("------------------------------------------")
+            print("looking for buy")
             print("Current Market Price: " + str(self.recentPriceTable[0]))
             print("RSI: " + str(RSI))
             print("\n")
@@ -187,10 +189,23 @@ class Algorithm:
                 setPrice = str(setPrice)
                 size = str(round(size,2))
 
-                self.AuthClient.buy(size, setPrice , self.typeCoin)
+                response = self.AuthClient.buy(size, setPrice , self.typeCoin)
                 buyPrice = setPrice
-                self.inMarket = True
-                self.sellRSI(size)
+
+                numSeconds = 0
+                while(response["status"] == "pending" and numSeconds < NUM_SECONDS_BUY_OR_SELL):
+                    response = self.AuthClient.checkOrder()
+                    numSeconds += 1
+                    time.sleep(1)
+
+                if(numSeconds != NUM_SECONDS_BUY_OR_SELL):
+                    self.inMarket = True
+                    self.sellRSI(size)
+                else:
+                    response = self.AuthClient.cancelOrder()
+                    print("order canceled")
+
+
 
 
     def sellRSI(self, size):
@@ -199,6 +214,7 @@ class Algorithm:
             RSI = self.getRSI(numPeriods)
 
             print("------------------------------------------")
+            print("looking for sell")
             print("Current Market Price: " + str(self.recentPriceTable[0]))
             print("RSI: " + str(RSI))
             print("\n")

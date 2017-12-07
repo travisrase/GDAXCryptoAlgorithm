@@ -33,7 +33,7 @@ class main:
 
 	market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
 	auth_client = AuthenticatedClient(coinbase_terminal, market, api_url)
-	algo = Algorithm("dummy", auth_client, market, "20.00", "LTC-USD")
+	algo = Algorithm("dummy", auth_client, market, "10.00", "LTC-USD")
 
 	algo.buyRSI()
 
