@@ -16,10 +16,23 @@ class MarketData:
     
     
     
+    def getRSI(self, numPeriods, updatePriceTable = True):
+        RSI = -1
+        RS = self.getRS(numPeriods, updatePriceTable)
+        if(RS == -1):
+            return RSI
+        else:
+            RSI = 100 - 100/(1+RS)
+            return RSI
     
-    def getRS(self, numPeriods):
+    def getRS(self, numPeriods, updatePriceTable = True):
         RS = -1
-        avgGain = self.getSmoothedAverageGain()
+        avgGain
+        if(updatePriceTable):
+            avgGain = self.getSmoothedAverageGain(numPeriods)
+        else:
+            avgGain = self.getSmoothedAverageGain(numPeriods, updatePriceTable)
+        
         avgLoss = self.getSmoothedAverageLoss(self.sizePriceTable -1, False)
         if(avgGain == -1 or avgLoss == -1):
             return RS
