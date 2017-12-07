@@ -17,8 +17,22 @@ class MarketData:
     
     
     
-    
-    
+    def getRS(self, numPeriods):
+        RS = -1
+        avgGain = self.getSmoothedAverageGain()
+        avgLoss = self.getSmoothedAverageLoss(self.sizePriceTable -1, False)
+        if(avgGain == -1 or avgLoss == -1):
+            return RS
+        elif(avgGain == 0 and avgLoss == 0):
+            RS = 1
+            return RS
+        elif(avgLoss == 0):
+            RS = 0
+        elif(avgGain == 0):
+            RS = 99
+        else:
+            RS = avgGain/avgLoss
+            return RS
     
     def getSmoothedAverageLoss(self, numPeriods = self.sizePriceTable -1, updatePriceTable = True):
         smoothedAverage = -1
