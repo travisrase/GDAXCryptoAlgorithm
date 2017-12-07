@@ -9,6 +9,10 @@ class MarketData:
         self.updateInterval = updateInterval
         self.sizePriceTable = sizePriceTable
         self.priceTable = [-1]*sizePriceTable
+        self.lastAverageGain = -1
+        self.lastAverageLoss = -1
+        self.lastSmoothedAverageGain = -1
+        self.lastSmoothedAverageLoss = -1
     
     
     
@@ -16,6 +20,28 @@ class MarketData:
     
     
     
+    def getSmoothedAverageLoss(self, numPeriods = self.sizePriceTable -1, updatePriceTable = True):
+        smoothedAverage = -1
+        
+        if(self.lastSmoothedAverageGain == -1):
+            smoothedAverage = (self.lastAverageLoss*(numPeriods-1) + self.getAverageLoss(numPeriods + 1, updatePriceTable))/ numPeriods
+            
+        else:
+            smoothedAverage = (self.lastSmoothedAverageLoss*(numPeriods-1) + self.getAverageLoss(numPeriods + 1, updatePriceTable))/ numPeriods
+            
+        return smoothedAverage
+    
+    
+    def getSmoothedAverageGain(self, numPeriods = self.sizePriceTable -1, updatePriceTable = True):
+        smoothedAverage = -1
+        
+        if(self.lastSmoothedAverageGain == -1):
+            smoothedAverage = (self.lastAverageGain*(numPeriods-1) + self.getAverageGain(numPeriods + 1, updatePriceTable))/ numPeriods
+            
+        else:
+            smoothedAverage = (self.lastSmoothedAverageGain*(numPeriods-1) + self.getAverageGain(numPeriods + 1, updatePriceTable))/ numPeriods
+            
+        return smoothedAverage
     
     def getAverageGain(self, numPeriods = self.sizePriceTable, updatePriceTable = True):
         if(updatePriceTable):
@@ -34,6 +60,7 @@ class MarketData:
                     gainTable.insert(i-1, 0)
             sm = sum(lossTable)
             average = sm/numPeriods
+            self.lastAverageLoss = average
             return average
             
     def getAverageLoss(self, numPeriods = self.sizePriceTable, updatePriceTable = True):
@@ -54,6 +81,7 @@ class MarketData:
 
             sm = sum(lossTable)
             average = sm/numPeriods
+            self.lastAverageGain = average
             return average
             
     
