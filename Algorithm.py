@@ -19,10 +19,10 @@ class Algorithm:
     NUM_SECONDS_BUY_OR_SELL = 10
 
 
-    def __init__(self, alg, AuthClient, MarketSocket, dollar_value, typeCoin):
+    def __init__(self, alg, AuthClient, MarketData, dollar_value, typeCoin):
         self.alg = alg
         self.AuthClient = AuthClient
-        self.MarketSocket = MarketSocket
+        self.MarketData = MarketData
         self.recentPriceTable = [0]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE * Algorithm.ENTRIES_PER_AVERAGE)
         self.current_price = 0
         self.slopeTable = [-100]*(Algorithm.NUM_ENTRIES_AVERAGEPRICETABLE-1)
@@ -164,15 +164,13 @@ class Algorithm:
 
     def buyRSI(self):
         numPeriods = 14
-        print("Wait " + str(numPeriods*Algorithm.UPDATE_INTERVAL*3) + " seconds")
-        for i in range(0, numPeriods*3):
-            self.updatePriceTable()
-
-        print("Ready to buy")
-        print("--------------------------------------")
+        print("wait: " + numPeriods*marketData.updateInterval
+              
+              #THINGS TO FIX HERE
 
         while(self.inMarket == False):
-            RSI = self.getRSI(numPeriods)
+            
+            RSI = self.marketData.getRSI(numPeriods)
 
             print("------------------------------------------")
             print("looking for buy")
@@ -183,9 +181,10 @@ class Algorithm:
 
             if(RSI < 35):
 
-                size = float(self.dollar_value) / float(self.MarketSocket.getMarketPrice())
+                size = float(self.dollar_value) / float(self.MarketData.getMarketPrice())
                 setPrice = float(self.MarketSocket.getMarketPrice()) -.01
                 setPrice = round(setPrice,3)
+
                 setPrice = str(setPrice)
                 size = str(round(size,2))
 
@@ -232,85 +231,4 @@ class Algorithm:
                 buyRSI(numPeriods)
 
 
-    def getRSI(self, numPeriods):
-        RSI = -1
-        RS = self.getRS(numPeriods)
-        if(RS == -1):
-            return RSI
-        else:
-            RSI = 100 - 100/(1+RS)
-            return RSI
 
-
-    def getRS(self, numPeriods):
-        RS = -1
-        avgGain = self.getAverageGain(numPeriods)
-        avgLoss = self.getAverageLoss(numPeriods)
-        if(avgGain == -1 or avgLoss == -1):
-            return RS
-        elif(avgGain == 0 or avgLoss == 0):
-            RS = 0
-            return RS
-        else:
-            RS = avgGain/avgLoss
-            return RS
-
-    def getAverageGain(self, numPeriods):
-        self.updatePriceTable()
-        previousAverage = self.averageGain
-        average = -1
-        gainTable = []
-        if(len(self.recentPriceTable) < numPeriods):
-            return average
-        else:
-            for i in range(1,numPeriods-1):
-                gain = self.recentPriceTable[i-1] - self.recentPriceTable[i]
-                if(gain > 0):
-                    gainTable.insert(i-1, gain)
-                else:
-                    gainTable.insert(i-1, 0)
-
-
-            sm = sum(gainTable)
-            average = sm/numPeriods
-            if(previousAverage == -1):
-                self.averageGain = average
-                return average
-            else:
-                average = (previousAverage*(numPeriods-1) + average)/numPeriods
-                self.averageGain = average
-                return average
-
-
-    def getAverageLoss(self, numPeriods):
-        self.updatePriceTable()
-        previousAverage = self.averageLoss
-        average = -1
-        lossTable = []
-        if(len(self.recentPriceTable) < numPeriods):
-            return average
-        else:
-            for i in range(1,numPeriods-1):
-                loss = self.recentPriceTable[i] - self.recentPriceTable[i-1]
-                if(loss > 0):
-                    lossTable.insert(i-1, loss)
-                else:
-                    lossTable.insert(i-1, 0)
-
-            sm = sum(lossTable)
-            average = sm/numPeriods
-
-            if(previousAverage == -1):
-                self.averageLoss = average
-                return average
-            else:
-                average = (previousAverage*(numPeriods-1) + average)/numPeriods
-                self.averageLoss = average
-                return average
-
-
-    def updatePriceTable(self):
-
-        self.recentPriceTable.insert(0, float(self.MarketSocket.getMarketPrice()))
-        self.recentPriceTable = self.recentPriceTable[:-1]
-        time.sleep(Algorithm.UPDATE_INTERVAL)
