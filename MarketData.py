@@ -1,3 +1,4 @@
+import MarketSocket
 
 class MarketData:
 
