@@ -34,4 +34,13 @@ class CoinbaseExchangeAuth(AuthBase):
 
     def __str__(self):
         return self.api_key + "   " + self.secret_key + "  " + self.passphrase
+    
+    def getAPIKey(self):
+        return self.api_key
+    
+    def getSecretKey(self):
+        return self.secret_key
+    
+    def getpassphrase(self):
+        return passphrase
 
