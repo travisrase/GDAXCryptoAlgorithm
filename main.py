@@ -6,6 +6,7 @@ import requests
 from threading import Timer
 from AuthenticatedClient import AuthenticatedClient
 from Algorithm import Algorithm
+from UserSocket import UserSocket
 
 
 class main:
@@ -25,17 +26,23 @@ class main:
 
 	#buy terminal
 
-	api_url = 'https://api.gdax.com/'
+	api_url = 'wss://ws-feed.gdax.com'
 
-	coinbase_terminal = CoinbaseExchangeAuth(User_API_Key,User_Secret, User_Passphrase)
+	#coinbase_terminal = CoinbaseExchangeAuth(User_API_Key,User_Secret, User_Passphrase)
 	#coinbase_terminal = CoinbaseExchangeAuth()
 
 
-	market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
-	auth_client = AuthenticatedClient(coinbase_terminal, market, api_url)
-	algo = Algorithm("dummy", auth_client, market, "10.00", "LTC-USD")
+	#market = MarketSocket.MarketSocket(coinbase_terminal, 'https://api.gdax.com/products/ltc-usd/ticker')
+	#auth_client = AuthenticatedClient(coinbase_terminal, market, api_url)
+	#algo = Algorithm("dummy", auth_client, market, "10.00", "LTC-USD")
 
-	algo.buyRSI()
+	user = UserSocket(api_url, )
+
+	user.openWS()
+	user.listen()
+
+
+
 
 
 

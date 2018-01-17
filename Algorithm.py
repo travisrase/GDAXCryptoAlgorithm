@@ -164,12 +164,12 @@ class Algorithm:
 
     def buyRSI(self):
         numPeriods = 14
-        print("wait: " + numPeriods*marketData.updateInterval
-              
+        print("wait: " + numPeriods*marketData.updateInterval)
+
               #THINGS TO FIX HERE
 
-        while(self.inMarket == False):
-            
+        while self.inMarket == False:
+
             RSI = self.marketData.getRSI(numPeriods)
 
             print("------------------------------------------")
@@ -229,6 +229,3 @@ class Algorithm:
                 self.AuthClient.sell(size, "market", self.typeCoin)
                 self.inMarket = False
                 buyRSI(numPeriods)
-
-
-
