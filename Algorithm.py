@@ -1,6 +1,5 @@
 
 from CoinBaseExchangeAuth import CoinbaseExchangeAuth
-import MarketSocket
 import requests
 from threading import Timer
 from AuthenticatedClient import AuthenticatedClient

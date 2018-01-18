@@ -1,5 +1,4 @@
 import CoinBaseExchangeAuth
-import MarketSocket
 import requests
 from threading import Timer
 
@@ -10,8 +9,6 @@ class AuthenticatedClient:
         self.auth = CoinBaseExchangeAuth
         self.api_url = api_url
         self.market = MarketSocket
-
-
 
 #if price = "Market" buy at market price
     def buy(self, size, price, product_id):
