@@ -65,3 +65,22 @@ class UserSocket():
                 return response
             except Exception as e:
                 self.connected = False
+
+    def flush(self):
+        if self.connected:
+            try:
+                self.socket.ping("")
+                response = self.socket.recv()
+                print(response)
+                time.sleep(.5)
+                self.socket.ping("")
+                response = self.socket.recv()
+                print(response)
+
+            except Exception as e:
+                self.connected = False
+
+    def closeSocket(self):
+        if self.connected:
+            self.socket.close()
+            self.connected = False

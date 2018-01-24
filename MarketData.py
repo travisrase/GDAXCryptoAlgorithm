@@ -1,4 +1,7 @@
 from Ticker import Ticker
+from threading import Thread
+import time
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class MarketData:
 
@@ -10,34 +13,50 @@ class MarketData:
     def __init__(self, product_id, coinBaseExchangeAuth, updateInterval, sizePriceTable):
 
         self.product_id = product_id
-        self.Ticker = Ticker(coinBaseExchangeAuth)
         self.updateInterval = updateInterval
         self.sizePriceTable = sizePriceTable
         self.priceTable = [-1]*sizePriceTable
-        self.lastAverageGain = -1
-        self.lastAverageLoss = -1
-        self.lastSmoothedAverageGain = -1
-        self.lastSmoothedAverageLoss = -1
+
+        self.smoothedAverageGain = -1
+        self.smoothedAverageLoss = -1
+
+        self.updatingPriceTable = False
+        self.scheduler = BackgroundScheduler()
+        self.Ticker = Ticker(coinBaseExchangeAuth)
+
+    #will auto update the price table every updateInterval seconds
+    def runMarketData(self):
+        self.scheduler.start()
+        self.scheduler.add_job(self.__updateAll,'interval', seconds = self.updateInterval)
+        self.updatingPriceTable = True
+        print("Market Data Updating")
+
+    #will stop auto updating the price table
+    def stopMarketData(self):
+        self.scheduler.shutdown()
+        self.updatingPriceTable = False
+        print("Market Data No Longer Updating")
+
+    def updateAll(self):
+        self.__updatePriceTable()
+        self.__updateSmoothedAverageGain()
+        self.__updateSmoothedAverageLoss()
 
 
-    def getRSI(self, numPeriods, updatePriceTable = True):
+    def getRSI(self, numPeriods):
         RSI = -1
-        RS = self.getRS(numPeriods, updatePriceTable)
+        RS = self.getRS(numPeriods)
         if(RS == -1):
             return RSI
         else:
             RSI = 100 - 100/(1+RS)
             return RSI
 
-    def getRS(self, numPeriods, updatePriceTable = True):
+    def getRS(self, numPeriods):
         RS = -1
-        avgGain
-        if(updatePriceTable):
-            avgGain = self.getSmoothedAverageGain(numPeriods)
-        else:
-            avgGain = self.getSmoothedAverageGain(numPeriods, updatePriceTable)
+        avgGain = self.getSmoothedAverageGain(numPeriods)
+        avgLoss = self.getSmoothedAverageLoss(numPeriods)
 
-        avgLoss = self.getSmoothedAverageLoss(self.sizePriceTable -1, False)
         if(avgGain == -1 or avgLoss == -1):
             return RS
         elif(avgGain == 0 and avgLoss == 0):
@@ -49,33 +68,50 @@ class MarketData:
             RS = 99
         else:
             RS = avgGain/avgLoss
-            return RS
+        return RS
 
-    def getSmoothedAverageLoss(self, numPeriods = self.sizePriceTable -1, updatePriceTable = True):
+    def getSmoothedAverageLoss(self):
+        return self.smoothedAverageLoss
+
+    def __updateSmoothedAverageLoss(self, numPeriods = 0, updatePriceTable = True):
+        if(numPeriods == 0):
+            numPeriods = self.sizePriceTable -1
+
         smoothedAverage = -1
+        previousSmoothedAverage = self.smoothedAverageLoss
 
-        if(self.lastSmoothedAverageGain == -1):
-            smoothedAverage = (self.lastAverageLoss*(numPeriods-1) + self.getAverageLoss(numPeriods + 1, updatePriceTable))/ numPeriods
+        if(previousSmoothedAverage == -1):
+            smoothedAverage = self.getAverageLoss(numPeriods + 1)
 
         else:
-            smoothedAverage = (self.lastSmoothedAverageLoss*(numPeriods-1) + self.getAverageLoss(numPeriods + 1, updatePriceTable))/ numPeriods
+            smoothedAverage = (previousSmoothedAverage*(numPeriods-1) + self.getAverageLoss(numPeriods + 1))/ numPeriods
 
+        self.smoothedAverageLoss = smoothedAverage
         return smoothedAverage
 
-    def getSmoothedAverageGain(self, numPeriods = self.sizePriceTable -1, updatePriceTable = True):
-        smoothedAverage = -1
+    def getSmoothedAverageGain(self):
+        return self.smoothedAverageGain()
 
-        if(self.lastSmoothedAverageGain == -1):
-            smoothedAverage = (self.lastAverageGain*(numPeriods-1) + self.getAverageGain(numPeriods + 1, updatePriceTable))/ numPeriods
+    def __updateSmoothedAverageGain(self, numPeriods = 0, lastSmoothedAverageGain):
+        if(numPeriods == 0):
+            numPeriods = self.sizePriceTable -1
+
+        smoothedAverage = -1
+        previousSmoothedAverage = self.smoothedAverageGain
+
+        if(previousSmoothedAverage == -1):
+            smoothedAverage = self.getAverageLoss(numPeriods + 1)
 
         else:
-            smoothedAverage = (self.lastSmoothedAverageGain*(numPeriods-1) + self.getAverageGain(numPeriods + 1, updatePriceTable))/ numPeriods
+            smoothedAverage = (previousSmoothedAverage*(numPeriods-1) + self.getAverageGain(numPeriods + 1))/ numPeriods
 
+        self.smoothedAverageGain = smoothedAverage
         return smoothedAverage
 
-    def getAverageGain(self, numPeriods = self.sizePriceTable, updatePriceTable = True):
-        if(updatePriceTable):
-            self.__fillPriceTable()
+    def getAverageGain(self, numPeriods = 0):
+
+        if(numPeriods == 0):
+            numPeriods = self.sizePriceTable
 
         average = -1
         gainTable = []
@@ -85,17 +121,25 @@ class MarketData:
             for i in range(1,numPeriods):
                 gain = self.priceTable[i] - self.priceTable[i-1]
                 if(gain > 0):
-                    gainTable.insert(i-1, loss)
+                    gainTable.insert(i-1, gain)
                 else:
                     gainTable.insert(i-1, 0)
-            sm = sum(lossTable)
-            average = sm/numPeriods
-            self.lastAverageLoss = average
-            return average
 
-    def getAverageLoss(self, numPeriods = self.sizePriceTable, updatePriceTable = True):
-        if(updatePriceTable):
-            self.__fillPriceTable()
+            sm = sum(gainTable)
+            average = sm/numPeriods
+            if(not self.__isPriceTableFull()):
+                return -1
+            else:
+                return average
+
+    #returns an integer value of the sum of the losses between entries in
+    #priceTable. Returns -1 if numPeriods is greater than the number of
+    #entries in priceTable or if priceTable is not full.
+
+    def getAverageLoss(self, numPeriods = 0):
+
+        if(numPeriods == 0):
+            numPeriods = self.sizePriceTable
 
         average = -1
         lossTable = []
@@ -111,8 +155,10 @@ class MarketData:
 
             sm = sum(lossTable)
             average = sm/numPeriods
-            self.lastAverageGain = average
-            return average
+            if(not self.__isPriceTableFull()):
+                return -1
+            else:
+                return average
 
 
     def __fillPriceTable(self):
@@ -120,6 +166,11 @@ class MarketData:
         while(self.__isPriceTableFull() == False):
             self.__updatePriceTable()
 
+    def __getSizePriceTable(self):
+        return self.sizePriceTable
+
+    def getPriceTable(self):
+        return self.priceTable
 
     def __isPriceTableFull(self):
         if(self.priceTable[-1] == -1):
@@ -128,9 +179,8 @@ class MarketData:
             return True
 
     def __updatePriceTable(self):
-        if(not Ticker.isRunning()):
-            self.Ticker.openTicker({self.product_id})
+        if(not self.Ticker.isRunning()):
+            self.Ticker.openTicker([self.product_id])
 
         self.priceTable.insert(0, float(self.Ticker.getPrice()))
-        self.recentPriceTable = self.recentPriceTable[:-1]
-        time.sleep(self.updateInterval)
+        self.priceTable = self.priceTable[0:self.sizePriceTable]

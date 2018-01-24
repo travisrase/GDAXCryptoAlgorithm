@@ -8,6 +8,7 @@ from AuthenticatedClient import AuthenticatedClient
 from Algorithm import Algorithm
 from UserSocket import UserSocket
 from MarketData import MarketData
+import time
 
 
 class main:
@@ -33,8 +34,27 @@ class main:
 	#algo = Algorithm("dummy", auth_client, market, "10.00", "LTC-USD")
 
 
-	market = MarketData("LTC-USD",coinbase_terminal,1,10)
+	#UserSocket = UserSocket(coinbase_terminal)
+	#channels = ["ticker"]
+	#UserSocket.subscribe(["LTC-USD"], channels)
+
+
+
+	market = MarketData("LTC-USD",coinbase_terminal,.5,10)
+	market.runMarketData()
+	print("marketPriceTable Updating")
+	print("")
+	print("")
+	time.sleep(10)
+	print("RSI")
+	print("")
 	print(market.getRSI())
+	time.sleep(50)
+	market.stopMarketData()
+	#sleep(100)
+	#print(market.getPriceTable())
+	#market.stopPriceTable()
+
 
 
 
