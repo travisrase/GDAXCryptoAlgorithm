@@ -79,3 +79,6 @@ class AuthenticatedClient:
         print(r.status_code)
         print("------------------SOLD-------------")
         print(order)
+
+    def getExchangeAuth():
+        return self.auth

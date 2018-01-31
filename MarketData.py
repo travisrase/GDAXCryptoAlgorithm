@@ -1,6 +1,7 @@
 from Ticker import Ticker
 from threading import Thread
 import time
+from OrderBook import OrderBook
 from apscheduler.schedulers.background import BackgroundScheduler
 
 class MarketData:
@@ -16,46 +17,62 @@ class MarketData:
         self.updateInterval = updateInterval
         self.sizePriceTable = sizePriceTable
         self.priceTable = [-1]*sizePriceTable
+        self.localOrderBook = {}
 
         self.smoothedAverageGain = -1
         self.smoothedAverageLoss = -1
 
-        self.updatingPriceTable = False
+        self.updating = False
         self.scheduler = BackgroundScheduler()
         self.Ticker = Ticker(coinBaseExchangeAuth)
+        self.OrderBook = OrderBook(coinBaseExchangeAuth)
 
     #will auto update the price table every updateInterval seconds
     def runMarketData(self):
         self.scheduler.start()
-        self.scheduler.add_job(self.__updateAll,'interval', seconds = self.updateInterval)
-        self.updatingPriceTable = True
+        self.Ticker.open([self.product_id])
+        self.OrderBook.open([self.product_id])
+
+        self.scheduler.add_job(self.updateAll,'interval', seconds = self.updateInterval)
+        self.scheduler.add_job(self.Ticker.update,'interval', seconds = self.updateInterval)
+        self.scheduler.add_job(self.__updateOrderBook,'interval', seconds = self.updateInterval)
+
+        self.updating = True
         print("Market Data Updating")
 
     #will stop auto updating the price table
     def stopMarketData(self):
         self.scheduler.shutdown()
-        self.updatingPriceTable = False
+        self.updating = False
         print("Market Data No Longer Updating")
+
+    def isRunning(self):
+        return self.updating
 
     def updateAll(self):
         self.__updatePriceTable()
         self.__updateSmoothedAverageGain()
         self.__updateSmoothedAverageLoss()
 
-
-    def getRSI(self, numPeriods):
-        RSI = -1
-        RS = self.getRS(numPeriods)
-        if(RS == -1):
-            return RSI
+    #CURRENT RSI IS USELESS, DOES NOT WORK
+    def getRSI(self, numPeriods, timeInterval):
+        if(numPeriods*timeInterval > self.sizePriceTable*self.updateInterval):
+            print("Invalid RSI Conditions")
+            return -1
         else:
-            RSI = 100 - 100/(1+RS)
-            return RSI
+            RSI = -1
+            RS = self.getRS(numPeriods, timeInterval)
+            if(RS == -1):
+                return RSI
+            else:
+                RSI = 100 - 100/(1+RS)
+                return RSI
 
-    def getRS(self, numPeriods):
+    #need to figure out a way to update
+    def getRS(self, numPeriods, timeInterval):
         RS = -1
-        avgGain = self.getSmoothedAverageGain(numPeriods)
-        avgLoss = self.getSmoothedAverageLoss(numPeriods)
+        avgGain = self.smoothedAverageGain
+        avgLoss = self.smoothedAverageLoss
 
         if(avgGain == -1 or avgLoss == -1):
             return RS
@@ -70,10 +87,7 @@ class MarketData:
             RS = avgGain/avgLoss
         return RS
 
-    def getSmoothedAverageLoss(self):
-        return self.smoothedAverageLoss
-
-    def __updateSmoothedAverageLoss(self, numPeriods = 0, updatePriceTable = True):
+    def __updateSmoothedAverageLoss(self, numPeriods = 0):
         if(numPeriods == 0):
             numPeriods = self.sizePriceTable -1
 
@@ -89,10 +103,7 @@ class MarketData:
         self.smoothedAverageLoss = smoothedAverage
         return smoothedAverage
 
-    def getSmoothedAverageGain(self):
-        return self.smoothedAverageGain()
-
-    def __updateSmoothedAverageGain(self, numPeriods = 0, lastSmoothedAverageGain):
+    def __updateSmoothedAverageGain(self, numPeriods = 0):
         if(numPeriods == 0):
             numPeriods = self.sizePriceTable -1
 
@@ -160,18 +171,6 @@ class MarketData:
             else:
                 return average
 
-
-    def __fillPriceTable(self):
-        self.__updatePriceTable()
-        while(self.__isPriceTableFull() == False):
-            self.__updatePriceTable()
-
-    def __getSizePriceTable(self):
-        return self.sizePriceTable
-
-    def getPriceTable(self):
-        return self.priceTable
-
     def __isPriceTableFull(self):
         if(self.priceTable[-1] == -1):
             return False
@@ -179,8 +178,20 @@ class MarketData:
             return True
 
     def __updatePriceTable(self):
-        if(not self.Ticker.isRunning()):
-            self.Ticker.openTicker([self.product_id])
+        if(self.Ticker.isRunning()):
+            self.priceTable.insert(0, self.Ticker.getPrice())
+            self.priceTable = self.priceTable[0:self.sizePriceTable]
+        else:
+            self.stopMarketData()
 
-        self.priceTable.insert(0, float(self.Ticker.getPrice()))
-        self.priceTable = self.priceTable[0:self.sizePriceTable]
+    def getPriceTable(self):
+        return self.priceTable
+
+    def __updateOrderBook(self):
+        if(self.self.OrderBook.isRunning()):
+            self.localOrderBook = self.OrderBook.getOrderBook()
+        else:
+            self.stopMarketData()
+
+    def getOrderBook(self):
+        return self.localOrderBook

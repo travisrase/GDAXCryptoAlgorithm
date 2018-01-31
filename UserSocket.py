@@ -31,7 +31,9 @@ class UserSocket():
         #product_id is a list of strings string such as ["LTC-USD"]
         #channels is a list that contains the channels as strings
         #such as ["ticker"]
-        params = {'type': 'subscribe', 'product_ids': product_id, 'channels': channels}
+        params = {'type': 'subscribe', "product_ids": product_id, 'channels': [channels]}
+
+        #params = {"type": "subscribe", "product_ids": ["ETH-USD"], "channels": ["level2", "heartbeat", {"name": "ticker","product_ids": ["ETH-USD"]}]}
 
         time1 = str(time.time())
         verify = time1 + 'GET' + '/users/self/verify'
@@ -47,14 +49,11 @@ class UserSocket():
         params['timestamp'] = time1
 
         self.socket = create_connection(self.address)
-
-        print(self.socket)
-        self.socket.send(json.dumps(params))
+        response = self.socket.send(json.dumps(params))
         self.connected = True
         print("------CONNECTED------")
 
         #subscription = json.loads(subscription)
-        print(self.socket)
 
     def listen(self):
         if self.connected:
@@ -66,16 +65,17 @@ class UserSocket():
             except Exception as e:
                 self.connected = False
 
+    #first message after you subscribe is a subscription message, this clears that message
+
     def flush(self):
         if self.connected:
             try:
                 self.socket.ping("")
                 response = self.socket.recv()
-                print(response)
+
                 time.sleep(.5)
                 self.socket.ping("")
                 response = self.socket.recv()
-                print(response)
 
             except Exception as e:
                 self.connected = False
@@ -84,3 +84,7 @@ class UserSocket():
         if self.connected:
             self.socket.close()
             self.connected = False
+
+
+    def isConnected(self):
+        return self.connected

@@ -19,9 +19,9 @@ class main:
 	global acceptable_loss,  total_loss, clock, market, coinbase_terminal, setPrice, dollar_buy
 
 	#User Input information for keys
-	User_API_Key = "9e9254dc6ff3a31d1c1bf6221adb1e1b"
-	User_Secret= "SLvLleh0Q3oKmRh/fSSB83N+9OWSbzgnVp4ccxL7NOFvrRwLODhLHXQvGcd+Szkm3E978uDzTj4yoL4fbiBGCg=="
-	User_Passphrase = "Fckmac"
+	User_API_Key = "fb7270674e21167ee5267782f4f5c941"
+	User_Secret= "dauisy8htpppF/mCODwgqPP94CYK9TJ8NiUrnQ62rJ9FRA0td2Szv8WpFHErdrIa7bJPpTK1CDXU7/DY/yjs+Q=="
+	User_Passphrase = "notaphassphrase"
 
 	#dollar_buy = float(input("How much do you want to spend?: "))
 	#setPrice = float(input("What is the price you want to buy at? :"))
@@ -38,19 +38,6 @@ class main:
 	#channels = ["ticker"]
 	#UserSocket.subscribe(["LTC-USD"], channels)
 
-
-
-	market = MarketData("LTC-USD",coinbase_terminal,.5,10)
-	market.runMarketData()
-	print("marketPriceTable Updating")
-	print("")
-	print("")
-	time.sleep(10)
-	print("RSI")
-	print("")
-	print(market.getRSI())
-	time.sleep(50)
-	market.stopMarketData()
 	#sleep(100)
 	#print(market.getPriceTable())
 	#market.stopPriceTable()
