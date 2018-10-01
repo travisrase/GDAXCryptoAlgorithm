@@ -1,21 +1,15 @@
 import requests
-
 import json, hmac, hashlib, time, requests, base64
-
 from requests.auth import AuthBase
-
-
 
 # Create custom authentication for Exchange. Saves the API Key, Secret Key and Passphrase
 class CoinbaseExchangeAuth(AuthBase):
-
     def __init__(self, api_key, secret_key, passphrase):
         self.api_key = api_key
         self.secret_key = secret_key
         self.passphrase = passphrase
-
+        
     #any instance of this class returns a string containing a request object with a header containing nessesssary info to authenticate
-
     def __call__(self, request):
         timestamp = str(time.time())
         message = timestamp + request.method + request.path_url + (request.body or '')
