@@ -3,7 +3,6 @@ from UserSocket import UserSocket
 import json
 
 class Ticker:
-
     def __init__(self, coinBaseExchangeAuth):
         self.TickerUserSocket = UserSocket(coinBaseExchangeAuth)
         self.running = False
