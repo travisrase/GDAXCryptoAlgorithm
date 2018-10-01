@@ -5,23 +5,20 @@ from OrderBook import OrderBook
 from apscheduler.schedulers.background import BackgroundScheduler
 
 class MarketData:
-
-
     #product_id is a String such as "LTC-USD"
     #updateInterval is an int
     #sizePriceTable is an int
 
     def __init__(self, product_id, coinBaseExchangeAuth, updateInterval, sizePriceTable):
-
         self.product_id = product_id
         self.updateInterval = updateInterval
         self.sizePriceTable = sizePriceTable
         self.priceTable = [-1]*sizePriceTable
         self.localOrderBook = {}
-
+        
         self.smoothedAverageGain = -1
         self.smoothedAverageLoss = -1
-
+        
         self.updating = False
         self.scheduler = BackgroundScheduler()
         self.Ticker = Ticker(coinBaseExchangeAuth)
@@ -32,11 +29,9 @@ class MarketData:
         self.scheduler.start()
         self.Ticker.open([self.product_id])
         self.OrderBook.open([self.product_id])
-
         self.scheduler.add_job(self.updateAll,'interval', seconds = self.updateInterval)
         self.scheduler.add_job(self.Ticker.update,'interval', seconds = self.updateInterval)
         self.scheduler.add_job(self.__updateOrderBook,'interval', seconds = self.updateInterval)
-
         self.updating = True
         print("Market Data Updating")
 
@@ -68,7 +63,6 @@ class MarketData:
                 RSI = 100 - 100/(1+RS)
                 return RSI
 
-    #need to figure out a way to update
     def getRS(self, numPeriods, timeInterval):
         RS = -1
         avgGain = self.smoothedAverageGain
@@ -146,9 +140,7 @@ class MarketData:
     #returns an integer value of the sum of the losses between entries in
     #priceTable. Returns -1 if numPeriods is greater than the number of
     #entries in priceTable or if priceTable is not full.
-
     def getAverageLoss(self, numPeriods = 0):
-
         if(numPeriods == 0):
             numPeriods = self.sizePriceTable
 
