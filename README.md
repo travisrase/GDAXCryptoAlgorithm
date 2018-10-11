@@ -1,18 +1,4 @@
 # CyrptoCurrencyTrading1
+Created By Travis Rase and Max Tanous: 
 
-
-Main: Runs algorithms, may run several algorithms simultaniuosly
-
-  Algorithm: 
-    Buys and sells through authenticated client based on results from indicies from the MarketData class
-
-    MarketData: 
-      Uses Level 1 and Level 2 market data from market socket and computes technical indicies
-
-      (Market or User)Socket: Gets Level 1 and Level 2 market data in real time
-
-
-    AuthenticatedClient: Allows you to buy and sell currencies 
-
-      CoinbaseExchangeAuth: Used to store API key, API passphrase, and API secret, 
-      used for any interaction with either APIs that requires authentication
+This program provides a platform to create automated crpyto currenecy trading algorithms with the GDAX API. It allows you to buy and sell all currencies avalible on the GDAX API, as well as retreive level 1 and level 2 market data. With this raw data we can then compute the values of technical indicators such as RSI and use these indicators to inform our algorithm. 
